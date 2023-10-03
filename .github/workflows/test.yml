@@ -1,0 +1,22 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main # Change this to your desired branch name
+  pull_request:
+    branches:
+      - main # Change this to your desired branch name
+
+jobs:
+  job_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push Event
+        run: echo This is the job for a push event.
+
+  job_pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Request Event
+        run: echo This is the job for a pull request event.

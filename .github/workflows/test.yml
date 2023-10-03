@@ -3,20 +3,26 @@ name: test
 on:
   push:
     branches:
-      - main # Change this to your desired branch name
+      - main
   pull_request:
     branches:
-      - main # Change this to your desired branch name
+      - main
 
 jobs:
   job_push:
     runs-on: ubuntu-latest
     steps:
-      - name: Push Event
-        run: echo This is the job for a push event.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Display directory structure
+        run: tree /github/workspace
 
   job_pull_request:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Request Event
-        run: echo This is the job for a pull request event.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Display directory structure
+        run: tree /github/workspace

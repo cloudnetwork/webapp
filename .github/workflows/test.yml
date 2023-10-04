@@ -41,7 +41,9 @@ jobs:
         ls -la
 
     - name: Run Django Migrations
-      run: python manage.py migrate
+      run: |
+        pwd 
+        python manage.py migrate
 
     - name: Run Django Tests
       run: python manage.py test

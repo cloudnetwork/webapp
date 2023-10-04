@@ -48,6 +48,7 @@ jobs:
 
     - name: Run Django Migrations
       run: |
+        cd csye6225
         python manage.py migrate
         # Make sure to run other necessary commands related to your Django project here
 

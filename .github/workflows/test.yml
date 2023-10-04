@@ -1,22 +1,49 @@
-name: test
+name: Django CI with SQLAlchemy and MySQL
 
 on:
-  push:
-    branches:
-      - main # Change this to your desired branch name
   pull_request:
     branches:
-      - main # Change this to your desired branch name
+      - main
 
 jobs:
-  job_push:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Push Event
-        run: echo This is the job for a push event.
 
-  job_pull_request:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8] # Choose the Python version you're using
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
-      - name: Pull Request Event
-        run: echo This is the job for a pull request event.
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Apply Django Migrations
+      run: python manage.py migrate
+
+    - name: Set Environment Variables
+      run: |
+        echo "DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@localhost:3306/CFTdatabase" >> .env
+
+    - name: Run Integration Tests
+      run: python manage.py test
+
+    - name: Cleanup MySQL
+      run: |
+        mysql -h localhost -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DROP DATABASE CFTdatabase;"

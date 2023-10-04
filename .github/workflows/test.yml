@@ -1,28 +1,51 @@
-name: test
+name: Django CI with SQLAlchemy and MySQL
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
 
 jobs:
-  job_push:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8] # Choose the Python version you're using
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Display directory structure
-        run: tree /github/workspace
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
 
-  job_pull_request:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
-      - name: Display directory structure
-        run: tree /github/workspace
+    - name: Set up MySQL
+      uses: mysql/setup-mysql@v1
+      with:
+        mysql-version: '5.7'
+        server-id: '1'
+        mysql-port: '3306'
+        mysql-root-password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        mysql-databases: 'root'
+
+    - name: Apply Django Migrations
+      run: python manage.py migrate
+
+    - name: Set Environment Variables (use GitHub Secrets)
+      run: |
+        echo "DATABASE_URL=mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@localhost:3306/root" >> .env
+
+    - name: Run Integration Tests
+      run: python manage.py test
+
+    - name: Cleanup MySQL
+      run: |
+        mysql -h localhost -u root -p"${{ secrets.MYSQL_ROOT_PASSWORD }}" -e "DROP DATABASE root;"
+
+# Optionally, you can add more steps for deployment or notifications if needed.

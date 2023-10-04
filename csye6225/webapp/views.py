@@ -13,6 +13,7 @@ def healthz(request):
 
             # Check the database connection status using SQLAlchemy's ping method
             with engine.connect():
+                print()
                 pass  # If the connection is successful, no exception will be raised
 
             return JsonResponse({}, status=200, content_type='application/json', headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'})

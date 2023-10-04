@@ -32,8 +32,17 @@ jobs:
         server-id: '1'
         mysql-port: '3306'
         mysql-root-password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-        mysql-databases: 'root'
+        mysql-databases: 'CFTdatabase'
 
+    # Add the mysql/setup-mysql action below:
+    - name: Set up MySQL with mysql/setup-mysql
+      uses: mysql/setup-mysql@v2
+      with:
+        mysql-version: '5.7'
+        mysql-server-port: 3306
+        mysql-root-password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        mysql-databases: 'CFTdatabase'
+        
     - name: Apply Django Migrations
       run: python manage.py migrate
 
@@ -46,6 +55,4 @@ jobs:
 
     - name: Cleanup MySQL
       run: |
-        mysql -h localhost -u root -p"${{ secrets.MYSQL_ROOT_PASSWORD }}" -e "DROP DATABASE root;"
-
-# Optionally, you can add more steps for deployment or notifications if needed.
+        mysql -h localhost -u root -p"${{ secrets.MYSQL_ROOT_PASSWORD }}" -e "DROP DATABASE CFTdatabase;"

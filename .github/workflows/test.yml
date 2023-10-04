@@ -42,7 +42,7 @@ jobs:
 
     - name: Run Django Migrations
       run: |
-        pwd 
+        cd csye6225
         python manage.py migrate
 
     - name: Run Django Tests

@@ -24,7 +24,7 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         pip install --upgrade pip
-        pip install django
+        pip install django  # Install Django inside the virtual environment
 
     - name: Install other dependencies
       run: |

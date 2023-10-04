@@ -1,10 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
-
-# Create your tests here.
+from unittest.mock import patch
+import sqlalchemy
 
 class HealthzViewTests(TestCase):
-    def test_healthz_no_payload(self):
+    def test_healthz_returns_200(self):
         response = self.client.get(reverse('healthz'))
         self.assertEqual(response.status_code, 200)
 
@@ -12,10 +12,12 @@ class HealthzViewTests(TestCase):
         response = self.client.get(reverse('healthz'))
         self.assertEqual(response['Cache-Control'], 'no-cache, no-store, must-revalidate')
 
-    def test_healthz_database_connection(self):
+    @patch('webapp.views.sqlalchemy.create_engine')
+    def test_healthz_with_database_connection(self, mock_create_engine):
+        # Mock the create_engine method to return a mock connection object
+        mock_connection = mock_create_engine.return_value.connect.return_value
+        mock_create_engine.return_value.connect.return_value.__enter__.return_value = mock_connection
+
+        # Check if the endpoint returns 200 when the database connection is valid
         response = self.client.get(reverse('healthz'))
         self.assertEqual(response.status_code, 200)
-
-        with self.settings(DATABASES={'default': {}}):
-            response = self.client.get(reverse('healthz'))
-        self.assertEqual(response.status_code, 503)

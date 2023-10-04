@@ -13,6 +13,15 @@ jobs:
       matrix:
         python-version: [3.8] # Choose the Python version you're using
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -25,34 +34,16 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
-    - name: Set up MySQL
-      uses: mysql/setup-mysql@v1
-      with:
-        mysql-version: '5.7'
-        server-id: '1'
-        mysql-port: '3306'
-        mysql-root-password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-        mysql-databases: 'CFTdatabase'
-
-    # Add the mysql/setup-mysql action below:
-    - name: Set up MySQL with mysql/setup-mysql
-      uses: mysql/setup-mysql@v2
-      with:
-        mysql-version: '5.7'
-        mysql-server-port: 3306
-        mysql-root-password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-        mysql-databases: 'CFTdatabase'
-        
     - name: Apply Django Migrations
       run: python manage.py migrate
 
-    - name: Set Environment Variables (use GitHub Secrets)
+    - name: Set Environment Variables
       run: |
-        echo "DATABASE_URL=mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@localhost:3306/root" >> .env
+        echo "DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@localhost:3306/CFTdatabase" >> .env
 
     - name: Run Integration Tests
       run: python manage.py test
 
     - name: Cleanup MySQL
       run: |
-        mysql -h localhost -u root -p"${{ secrets.MYSQL_ROOT_PASSWORD }}" -e "DROP DATABASE CFTdatabase;"
+        mysql -h localhost -u root -p"${MYSQL_ROOT_PASSWORD}" -e "DROP DATABASE CFTdatabase;"
